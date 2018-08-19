@@ -24,7 +24,10 @@ public class NetworkPlayerInput : NetworkBehaviour
         {
             float inputH = Input.GetAxis("Horizontal");
             float inputV = Input.GetAxis("Vertical");
+            float mouseX = Input.GetAxis("Mouse X");
+            float mouseY = Input.GetAxis("Mouse Y");
             controller.Move(inputH, inputV);
+            cam.Look(mouseX, mouseY);
         }
     }
 }

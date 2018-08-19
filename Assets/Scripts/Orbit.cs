@@ -1,12 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections;
 
 public class Orbit : MonoBehaviour
 {
-
+    public bool hideCursor = false;
     public Transform target;
-    public float distance = 5.0f;
+    public Vector3 offset = new Vector3(0, 1f, 0);
+
+    public float maxDistance = 5.0f;
     public float xSpeed = 120.0f;
     public float ySpeed = 120.0f;
 
@@ -16,49 +17,77 @@ public class Orbit : MonoBehaviour
     public float distanceMin = .5f;
     public float distanceMax = 15f;
 
-   
-
-    float x = 0.0f;
-    float y = 0.0f;
+    private Vector3 originalOffset;
+    private float distance = 5.0f;
+    private float x = 0.0f;
+    private float y = 0.0f;
+    [Header("Collision")]
+    public bool cameraCollision = false;
+    public float rayDistance = 1000f;
+    public LayerMask ignoreLayers;
+    public float camRadius = 0.3f;
 
     // Use this for initialization
     void Start()
     {
-        transform.SetParent(null);
+        // Calculate offset of camera at start
+        originalOffset = transform.position - target.position;
+        // Ray distance is as long as the magnitude of offset
+        rayDistance = originalOffset.magnitude;
         Vector3 angles = transform.eulerAngles;
         x = angles.y;
         y = angles.x;
-        
-    }
 
+        transform.SetParent(null);
+
+        if(hideCursor)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+    }
+    public void Look(float mouseX, float mouseY)
+    {
+        x += mouseX * xSpeed * distance * Time.deltaTime;
+        y -= mouseY * ySpeed * Time.deltaTime;
+
+        y = ClampAngle(y, yMinLimit, yMaxLimit);
+
+        Quaternion rotation = Quaternion.Euler(y, x, 0);
+        transform.rotation = rotation;
+    }
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, camRadius);
+    }
+    private void FixedUpdate()
+    {
+        if (target)
+        {
+            if (cameraCollision)
+            {
+                Ray camRay = new Ray(target.position, -transform.forward);
+                RaycastHit hit;
+                if (Physics.SphereCast(camRay,camRadius ,out hit, rayDistance, ~ignoreLayers, QueryTriggerInteraction.Ignore))
+                {
+                    distance = hit.distance;
+                    //return - exit function
+                    return;
+                }
+            }
+            // Reset distance if not hitting
+            distance = originalOffset.magnitude;
+        }
+    }
+   
     void LateUpdate()
     {
         if (target)
         {
-            x += Input.GetAxis("Mouse X") * xSpeed * Time.deltaTime;
-            y -= Input.GetAxis("Mouse Y") * ySpeed * Time.deltaTime;
-
-            y = ClampAngle(y, yMinLimit, yMaxLimit);
-
-            Quaternion rotation = Quaternion.Euler(y, x, 0);
-
-            distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel") * 5, distanceMin, distanceMax);
-
-            //RaycastHit hit;
-            //if (Physics.Linecast(target.position, transform.position, out hit))
-            //{
-            //    distance -= hit.distance;
-            //}
-            Vector3 negDistance = new Vector3(0.0f, 0.0f, -distance);
-            Vector3 position = rotation * negDistance + target.position;
-
-            transform.rotation = rotation;
-            transform.position = position;
-
-
-            Vector3 euler = transform.eulerAngles;
-            target.rotation = Quaternion.AngleAxis(euler.y, Vector3.up);
-
+            //convort from world to local
+            Vector3 localOffset = transform.TransformDirection(offset);
+            transform.position = (target.position + localOffset) + -transform.forward * distance;            
         }
     }
 
@@ -70,6 +99,4 @@ public class Orbit : MonoBehaviour
             angle -= 360F;
         return Mathf.Clamp(angle, min, max);
     }
-
-
 }

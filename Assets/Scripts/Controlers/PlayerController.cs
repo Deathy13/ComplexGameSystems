@@ -18,6 +18,8 @@ public class PlayerController : MonoBehaviour
         Vector3 force = new Vector3(inputH, 0, inputV);
         force = transform.TransformDirection(force);
         rigid.AddForce(force * speed);
+        Vector3 euler = cam.transform.eulerAngles;
+        transform.rotation = Quaternion.AngleAxis(euler.y, Vector3.up);
 
     }
 }

@@ -101,7 +101,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1625655468379950}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.5, z: 0}
+  m_LocalPosition: {x: -5.706518, y: 1.96, z: 2.0278525}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4005857589871782}
@@ -279,6 +279,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controller: {fileID: 114925940476941010}
+  cam: {fileID: 114773649015699096}
 --- !u!114 &114773649015699096
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -290,14 +291,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e978b1564f607f542aa53e787ce5656b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hideCursor: 0
   target: {fileID: 4833431950711586}
-  distance: 5
+  offset: {x: 0, y: 1, z: 0}
+  maxDistance: 5
   xSpeed: 120
   ySpeed: 120
   yMinLimit: -20
   yMaxLimit: 80
   distanceMin: 0.5
   distanceMax: 15
+  cameraCollision: 0
+  rayDistance: 1000
+  ignoreLayers:
+    serializedVersion: 2
+    m_Bits: 512
+  camRadius: 0.3
 --- !u!114 &114925940476941010
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -311,7 +320,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 75
   rigid: {fileID: 54423260891701646}
-  cam: {fileID: 1625655468379950}
+  cam: {fileID: 1562154492171934}
 --- !u!136 &136066183604321306
 CapsuleCollider:
   m_ObjectHideFlags: 1
