@@ -101,11 +101,11 @@ public class CheckerBoard : MonoBehaviour
             Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             // Perform raycast
-            if (Physics.Raycast(camRay,out hit,rayDistance,hitLayers))
+            if (Physics.Raycast(camRay, out hit, rayDistance, hitLayers))
             {
                 // Convert world position to an array index (by converting to int aswell)
                 mouseOver.x = (int)(hit.point.x - boardOffset.x);
-                mouseOver.y = (int)(hit.point.y - boardOffset.z);
+                mouseOver.y = (int)(hit.point.z - boardOffset.z);
             }
             else
             {
@@ -117,19 +117,64 @@ public class CheckerBoard : MonoBehaviour
     }
     void UpdatePieceDrag(Piece pieceToDrag)
     {
-        if(Camera.main == null)
+        if (Camera.main == null)
         {
             Debug.Log("unable to find Main Camera");
             // Exit the function
+            return;
         }
         // Generate ray from mouse input to world
         Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         // Perform raycast
-        if (Physics.Raycast(camRay,out hit,rayDistance,hitLayers))
+        if (Physics.Raycast(camRay, out hit, rayDistance, hitLayers))
         {
             // Start dragging the piece and move it just above the cursor
             pieceToDrag.transform.position = hit.point + Vector3.up;
+        }
+    }
+    void SelectPiece(int x, int y)
+    {
+        // Check if x and y is outside of bounds of pieces array
+        // x < 0 || x >= array length || y 
+        if (x < 0 || x >= pieces.GetLength(0) ||
+            y < 0 || y >= pieces.GetLength(1))
+        {
+            // return - exit function
+            return;
+        }
+
+
+        Piece p = pieces[x, y];
+        if (p != null && p.isWhite == isWhite)
+        {
+            selectedPiece = p;
+            startDrag = mouseOver;
+        }
+    }
+    void TryMove(int x1, int y1, int x2, int y2)
+    {
+        if (x1 < 0 || x1 >= pieces.GetLength(0) ||
+            x2 < 0 || x2 >= pieces.GetLength(0) ||
+            y1 < 0 || y1 >= pieces.GetLength(1) ||
+            y2 < 0 || y2 >= pieces.GetLength(1))
+        {
+            return;
+        }
+        if (selectedPiece != null)
+        {
+            MovePiece(selectedPiece, x2, y2);
+
+            Piece temp = pieces[x1, y1]; // save origina to temp    
+            Piece newSlot = pieces[x2, y2];
+            if (newSlot)
+            {
+                MovePiece(newSlot, x1, y1);
+            }
+            pieces[x1, y1] = pieces[x2, y2]; //re
+            pieces[x2, y2] = temp;
+            // selectedPiece = null;
+            selectedPiece = null;
         }
     }
     // Use this for initialization
@@ -148,12 +193,29 @@ public class CheckerBoard : MonoBehaviour
             // Convert coordinates to int (again to be sure)
             int x = (int)mouseOver.x;
             int y = (int)mouseOver.y;
+
+            // Select the piece - void SelectPiece(int x , int y)
+
+            // If mousebutton down
+            if (Input.GetMouseButtonDown(0))
+            {
+                // SelectPiece(x, y)
+                SelectPiece(x, y);
+            }
+
             // Is there a selectedPiece currently?
             if (selectedPiece != null)
             {
                 // Update the drag position
                 UpdatePieceDrag(selectedPiece);
+                if (Input.GetMouseButtonUp(0))
+                {
+                    TryMove((int)startDrag.x, (int)startDrag.y, x, y);
+
+
+                }
             }
+            //  MovePiece(selectedPiece, x, y);
         }
     }
 }
